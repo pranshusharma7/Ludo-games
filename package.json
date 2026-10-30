@@ -1,0 +1,24 @@
+{
+  "name": "royal-ludo-multiplayer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-grade Netlify-ready real-time multiplayer Ludo with Netlify Functions, Netlify Blobs, Three.js 3D WebGL Dice, and React",
+  "workspaces": [
+    "shared",
+    "client"
+  ],
+  "scripts": {
+    "test": "npx tsx --test shared/tests/*.test.ts tests/*.test.ts",
+    "build:shared": "npm --prefix shared run build",
+    "build:client": "npm --prefix client run build",
+    "build": "npm run build:shared && npm run build:client",
+    "dev": "npm --prefix client run dev"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.7",
+    "@netlify/functions": "^6.0.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  }
+}

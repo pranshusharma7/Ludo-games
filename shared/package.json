@@ -1,0 +1,14 @@
+{
+  "name": "@royal-ludo/shared",
+  "version": "1.0.0",
+  "description": "Pure deterministic game engine and shared types for Royal Ludo",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "npx tsx --test tests/*.test.ts"
+  },
+  "keywords": ["ludo", "engine", "multiplayer"],
+  "author": "",
+  "license": "MIT"
+}

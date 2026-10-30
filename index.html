@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Royal Ludo | 
+    Luxury Handcrafted Wooden Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Realistic Wood Grain SVG Filters -->
+  <svg class="svg-filters" aria-hidden="true">
+    <defs>
+      <filter id="woodGrain" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.035 0.006" numOctaves="4" result="noise" />
+        <feColorMatrix type="matrix" values="
+          0.38 0 0 0 0.32
+          0 0.24 0 0 0.18
+          0 0 0.12 0 0.08
+          0 0 0 0.28 0" result="coloredNoise" />
+        <feBlend in="SourceGraphic" in2="coloredNoise" mode="multiply" />
+      </filter>
+      <filter id="brassBevel">
+        <feDropShadow dx="1" dy="2" stdDeviation="1.5" flood-color="#000" flood-opacity="0.6"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="tablecloth-bg"></div>
+  <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
+
+  <div class="app-shell">
+    <!-- Top Navigation Bar -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-crest">
+          <span class="crest-crown">♔</span>
+          <span class="crest-sub">Est. 1896</span>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">ROYAL <b>LUDO</b></span>
+          <span class="brand-subtitle">HANDCRAFTED WALNUT & BRASS EDITION</span>
+        </div>
+      </div>
+
+      <div class="top-controls">
+        <button id="viewToggleBtn" class="pill-btn" title="Toggle 3D Table Perspective">
+          <span class="btn-icon">🎲</span> <span class="btn-label">3D Table</span>
+        </button>
+        <button id="soundToggleBtn" class="pill-btn" title="Toggle Sound Effects">
+          <span class="btn-icon" id="soundIcon">🔊</span> <span class="btn-label">Audio On</span>
+        </button>
+        <button id="speedToggleBtn" class="pill-btn" title="Toggle Animation Speed">
+          <span class="btn-icon">⚡</span> <span class="btn-label">Normal</span>
+        </button>
+        <button id="rulesBtn" class="pill-btn" title="View Classic Game Rules">
+          <span class="btn-icon">📜</span> <span class="btn-label">Rules</span>
+        </button>
+        <button id="newGameTop" class="pill-btn gold-pill" title="Start New Match">
+          <span class="btn-icon">↻</span> <span class="btn-label">New Game</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <!-- 01: Setup / Lobby Screen -->
+      <section id="setup" class="setup-screen">
+        <div class="setup-hero">
+          <div class="royal-badge">✦ PREMIER BOARDROOM SUITE ✦</div>
+          <h1 class="hero-title">Roll in <em>Grandeur</em>.<br>Rule the <em>Board</em>.</h1>
+          <p class="hero-desc">
+            Immerse yourself in hand-turned rosewood tokens, solid brass inlays, and the satisfying clatter of ivory dice across a dark walnut table.
+          </p>
+          <div class="setup-features-row">
+            <div class="feat-box">
+              <span class="feat-icon">♟</span>
+              <b>Authentic 15×15 Track</b>
+              <small>Canonical Indian & International layout</small>
+            </div>
+            <div class="feat-box">
+              <span class="feat-icon">🤖</span>
+              <b>Smart AI Opponents</b>
+              <small>Play solo or pass-and-play with friends</small>
+            </div>
+            <div class="feat-box">
+              <span class="feat-icon">🔊</span>
+              <b>Acoustic Audio</b>
+              <small>Resonant wood clacks & rolling dice</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-card brass-frame">
+          <div class="brass-corner tl"></div>
+          <div class="brass-corner tr"></div>
+          <div class="brass-corner bl"></div>
+          <div class="brass-corner br"></div>
+
+          <div class="card-header">
+            <div>
+              <span class="card-step">PARLOR MATCH SETUP</span>
+              <h3 class="card-title">Assemble the Players</h3>
+            </div>
+            <span class="mode-tag">LOCAL & AI</span>
+          </div>
+
+          <div class="form-group">
+            <label class="group-label">SELECT MATCH CONFIGURATION</label>
+            <div class="player-count-selector">
+              <button class="count-card selected" data-count="4">
+                <span class="count-num">4</span>
+                <span class="count-meta">Players</span>
+                <small>Full Grand Match</small>
+              </button>
+              <button class="count-card" data-count="2">
+                <span class="count-num">2</span>
+                <span class="count-meta">Players</span>
+                <small>Classic Duel (Red vs Yellow)</small>
+              </button>
+              <button class="count-card" data-count="3">
+                <span class="count-num">3</span>
+                <span class="count-meta">Players</span>
+                <small>Triangular Melee</small>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="group-label">PLAYER CUSTOMIZATION & AI SELECTION</label>
+            <div id="playerSetupList" class="player-setup-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <button id="startGameBtn" class="grand-btn">
+            <span class="btn-text">ENTER THE GRAND MATCH</span>
+            <span class="btn-arrow">➔</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 02: Active Game Screen -->
+      <section id="game" class="game-screen hidden">
+        <!-- Match Sub-Header -->
+        <div class="match-bar">
+          <div class="match-meta">
+            <span class="match-eyebrow">ROYAL TOURNAMENT</span>
+            <h2 class="match-title">Imperial <em>Table</em></h2>
+          </div>
+          <div class="turn-tracker-wrap">
+            <span class="tracker-label">ACTIVE ROTATION</span>
+            <div id="turnTracker" class="turn-tracker">
+              <!-- Indicators for player order -->
+            </div>
+          </div>
+          <div class="match-actions">
+            <button id="restartBtn" class="pill-btn" title="Restart with same players">↻ Reset</button>
+            <button id="lobbyBtn" class="pill-btn" title="Back to setup">⌂ Lobby</button>
+          </div>
+        </div>
+
+        <!-- Main Game Layout: Left HUD | Central Wooden Board | Right Controls HUD -->
+        <div class="game-boardroom">
+          <!-- Left HUD: Player Standings -->
+          <aside class="hud-panel left-hud">
+            <div class="hud-box player-standings-box">
+              <div class="box-title">
+                <span>SEATED PLAYERS</span>
+                <span class="live-blink">● LIVE</span>
+              </div>
+              <div id="playerList" class="players-vertical-list">
+                <!-- Populated dynamically with rich cards -->
+              </div>
+            </div>
+
+            <!-- Mini Rules Cheat Sheet -->
+            <div class="hud-box quick-rules-box">
+              <div class="box-title"><span>HOUSE RULES</span><span>♔</span></div>
+              <ul class="mini-rules-list">
+                <li><span class="rule-icon">⚅</span> Roll <b>6</b> to leave the yard & get an extra roll.</li>
+                <li><span class="rule-icon">⚔</span> Land on opponent to <b>capture</b> & send home.</li>
+                <li><span class="rule-icon">★</span> <b>Stars (8)</b> are consecrated safe havens.</li>
+                <li><span class="rule-icon">⛔</span> <b>Three 6s</b> cancels the 3rd roll.</li>
+                <li><span class="rule-icon">🏆</span> Exact count required to reach <b>Home</b>.</li>
+              </ul>
+            </div>
+          </aside>
+
+          <!-- Center Stage: Handcrafted Wooden Ludo Board -->
+          <div class="board-arena" id="boardArena">
+            <div class="board-perspective-wrapper" id="perspectiveWrap">
+              <div class="board-table-shadow"></div>
+              
+              <!-- Solid Wooden Board Frame -->
+              <div class="royal-wood-board" id="woodBoard">
+                <!-- Carved Bevel Edges & Corner Brass Accents -->
+                <div class="brass-bracket corner-top-left"></div>
+                <div class="brass-bracket corner-top-right"></div>
+                <div class="brass-bracket corner-bottom-left"></div>
+                <div class="brass-bracket corner-bottom-right"></div>
+                
+                <div class="board-surface" id="boardSurface">
+                  <!-- 4 Colored Home Bases (Yards) -->
+                  <!-- Red Yard (Top Left) -->
+                  <div class="home-yard yard-red">
+                    <div class="yard-felt-inset">
+                      <div class="yard-crest">
+                        <span class="yard-crest-symbol">♔</span>
+                        <span class="yard-name">RUBY RED</span>
+                      </div>
+                      <div class="token-cups-grid" id="redCups">
+                        <div class="token-cup cup-red" data-cup="red-0"></div>
+                        <div class="token-cup cup-red" data-cup="red-1"></div>
+                        <div class="token-cup cup-red" data-cup="red-2"></div>
+                        <div class="token-cup cup-red" data-cup="red-3"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Green Yard (Top Right) -->
+                  <div class="home-yard yard-green">
+                    <div class="yard-felt-inset">
+                      <div class="yard-crest">
+                        <span class="yard-crest-symbol">♕</span>
+                        <span class="yard-name">EMERALD GREEN</span>
+                      </div>
+                      <div class="token-cups-grid" id="greenCups">
+                        <div class="token-cup cup-green" data-cup="green-0"></div>
+                        <div class="token-cup cup-green" data-cup="green-1"></div>
+                        <div class="token-cup cup-green" data-cup="green-2"></div>
+                        <div class="token-cup cup-green" data-cup="green-3"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Yellow Yard (Bottom Right) -->
+                  <div class="home-yard yard-yellow">
+                    <div class="yard-felt-inset">
+                      <div class="yard-crest">
+                        <span class="yard-crest-symbol">♗</span>
+                        <span class="yard-name">AMBER GOLD</span>
+                      </div>
+                      <div class="token-cups-grid" id="yellowCups">
+                        <div class="token-cup cup-yellow" data-cup="yellow-0"></div>
+                        <div class="token-cup cup-yellow" data-cup="yellow-1"></div>
+                        <div class="token-cup cup-yellow" data-cup="yellow-2"></div>
+                        <div class="token-cup cup-yellow" data-cup="yellow-3"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Blue Yard (Bottom Left) -->
+                  <div class="home-yard yard-blue">
+                    <div class="yard-felt-inset">
+                      <div class="yard-crest">
+                        <span class="yard-crest-symbol">♘</span>
+                        <span class="yard-name">SAPPHIRE BLUE</span>
+                      </div>
+                      <div class="token-cups-grid" id="blueCups">
+                        <div class="token-cup cup-blue" data-cup="blue-0"></div>
+                        <div class="token-cup cup-blue" data-cup="blue-1"></div>
+                        <div class="token-cup cup-blue" data-cup="blue-2"></div>
+                        <div class="token-cup cup-blue" data-cup="blue-3"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 15x15 Wooden Track Tiles Grid -->
+                  <div id="boardTilesLayer" class="board-tiles-layer"></div>
+
+                  <!-- Center Home Victory Pyramid -->
+                  <div class="center-pyramid">
+                    <div class="pyramid-tri tri-red"></div>
+                    <div class="pyramid-tri tri-green"></div>
+                    <div class="pyramid-tri tri-yellow"></div>
+                    <div class="pyramid-tri tri-blue"></div>
+                    <div class="royal-medallion">
+                      <span class="medallion-star">✦</span>
+                      <span class="medallion-title">ROYAL</span>
+                      <span class="medallion-sub">LUDO</span>
+                    </div>
+                  </div>
+
+                  <!-- Dynamic Pawns Layer -->
+                  <div id="pawnsLayer" class="pawns-layer"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Legend -->
+            <div class="board-footer-legend">
+              <span class="legend-chip red"><span class="chip-dot"></span>Red Ruby</span>
+              <span class="legend-chip green"><span class="chip-dot"></span>Green Emerald</span>
+              <span class="legend-chip yellow"><span class="chip-dot"></span>Yellow Amber</span>
+              <span class="legend-chip blue"><span class="chip-dot"></span>Blue Sapphire</span>
+              <span class="legend-chip star"><span class="chip-star">★</span>Safe Spot</span>
+            </div>
+          </div>
+
+          <!-- Right HUD: Turn Controls & 3D Dice Station -->
+          <aside class="hud-panel right-hud">
+            <!-- Dice & Action Control Box -->
+            <div class="hud-box turn-command-box" id="turnCommandBox">
+              <div class="box-title">
+                <span>TURN CONTROL</span>
+                <span id="turnColorPill" class="color-badge red">RED'S TURN</span>
+              </div>
+
+              <div class="turn-hero-display">
+                <div class="turn-avatar-wrap">
+                  <div id="turnAvatar" class="turn-avatar red-avatar">♔</div>
+                  <div class="turn-pulse-ring"></div>
+                </div>
+                <div class="turn-details">
+                  <div class="turn-owner-name" id="turnOwnerName">Red Sovereign</div>
+                  <div class="turn-status-text" id="turnStatusText">Awaiting Dice Roll…</div>
+                </div>
+              </div>
+
+              <!-- 3D Dice Stage -->
+              <div class="dice-stage-container">
+                <div class="dice-cup-tray">
+                  <div class="felt-mat">
+                    <!-- Interactive 3D CSS Dice -->
+                    <div id="diceCubeContainer" class="dice-cube-container" tabindex="0" role="button" aria-label="Roll Dice">
+                      <div id="diceCube" class="dice-cube show-1">
+                        <div class="cube-face face-front" data-face="1">
+                          <span class="pip pip-center"></span>
+                        </div>
+                        <div class="cube-face face-back" data-face="6">
+                          <span class="pip pip-tl"></span>
+                          <span class="pip pip-ml"></span>
+                          <span class="pip pip-bl"></span>
+                          <span class="pip pip-tr"></span>
+                          <span class="pip pip-mr"></span>
+                          <span class="pip pip-br"></span>
+                        </div>
+                        <div class="cube-face face-right" data-face="2">
+                          <span class="pip pip-tl"></span>
+                          <span class="pip pip-br"></span>
+                        </div>
+                        <div class="cube-face face-left" data-face="5">
+                          <span class="pip pip-tl"></span>
+                          <span class="pip pip-tr"></span>
+                          <span class="pip pip-center"></span>
+                          <span class="pip pip-bl"></span>
+                          <span class="pip pip-br"></span>
+                        </div>
+                        <div class="cube-face face-top" data-face="3">
+                          <span class="pip pip-tl"></span>
+                          <span class="pip pip-center"></span>
+                          <span class="pip pip-br"></span>
+                        </div>
+                        <div class="cube-face face-bottom" data-face="4">
+                          <span class="pip pip-tl"></span>
+                          <span class="pip pip-tr"></span>
+                          <span class="pip pip-bl"></span>
+                          <span class="pip pip-br"></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dice-tray-rim"></div>
+                </div>
+
+                <div class="dice-interaction-prompt" id="dicePrompt">
+                  <span class="kbd-badge">SPACE</span> or <span class="click-badge">CLICK DICE</span> to Roll
+                </div>
+              </div>
+
+              <!-- Move Actions Prompt / Buttons -->
+              <div class="move-decision-section" id="moveDecisionSection">
+                <div class="decision-title" id="decisionTitle">Roll the dice to proceed</div>
+                <div id="moveButtonsList" class="move-buttons-list">
+                  <!-- Generated when multiple moves available -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Tournament Chronicle / Activity Log -->
+            <div class="hud-box log-box">
+              <div class="box-title">
+                <span>MATCH CHRONICLE</span>
+                <span class="log-count" id="logCount">0 events</span>
+              </div>
+              <div id="activityLog" class="activity-log-scroll">
+                <div class="log-entry system-msg">
+                  <span class="log-time">Now</span>
+                  <span class="log-text">The mahogany table is set. May fortune favor the bold.</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modals & Overlays -->
+    <!-- Rules Modal -->
+    <div id="rulesModal" class="modal-backdrop hidden">
+      <div class="modal-window brass-frame">
+        <div class="brass-corner tl"></div>
+        <div class="brass-corner tr"></div>
+        <div class="brass-corner bl"></div>
+        <div class="brass-corner br"></div>
+        <div class="modal-header">
+          <div class="modal-badge">ROYAL CODEX</div>
+          <h2>Rules of Royal Ludo</h2>
+          <button id="closeRulesBtn" class="close-btn" aria-label="Close rules">✕</button>
+        </div>
+        <div class="modal-body rules-scroll">
+          <div class="rule-card">
+            <h4>1. Unlocking From Yard</h4>
+            <p>A pawn can only leave its colored base when you roll a <b>6</b>. It enters on your designated starting star square.</p>
+          </div>
+          <div class="rule-card">
+            <h4>2. Extra Rolls</h4>
+            <p>Rolling a <b>6</b> or <b>capturing an opponent's pawn</b> grants an immediate bonus roll. However, rolling three consecutive 6s voids the third turn!</p>
+          </div>
+          <div class="rule-card">
+            <h4>3. Capturing Opponents</h4>
+            <p>Landing on a square occupied by an opponent sends their pawn back to their yard. Captures are rewarded with a bonus roll.</p>
+          </div>
+          <div class="rule-card">
+            <h4>4. Consecrated Safe Squares (★)</h4>
+            <p>The 8 star squares (starting squares + mid-arm stars) are completely safe. Multiple pawns of any color can co-exist here peacefully without fear of capture.</p>
+          </div>
+          <div class="rule-card">
+            <h4>5. Entering the Home Triangle</h4>
+            <p>Once completing the 52-tile circuit, your pawns traverse the colored Home Lane. Reaching the central victory triangle requires an <b>exact roll</b>.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="rulesGotItBtn" class="grand-btn"><span>UNDERSTOOD, PROCEED</span> ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Victory Modal -->
+    <div id="winModal" class="modal-backdrop hidden">
+      <div class="modal-window victory-window brass-frame">
+        <div class="brass-corner tl"></div>
+        <div class="brass-corner tr"></div>
+        <div class="brass-corner bl"></div>
+        <div class="brass-corner br"></div>
+        
+        <div class="victory-crown">👑</div>
+        <div class="modal-badge">GRAND CHAMPION DECIDED</div>
+        <h2 id="winPlayerName" class="winner-title">Ruby Red Triumphs!</h2>
+        <p id="winPlayerDesc" class="winner-desc">All four tokens have attained the Imperial Home Pyramid in glorious triumph.</p>
+
+        <div class="win-stats-grid" id="winStatsGrid">
+          <!-- Stats such as turns taken, captures made -->
+        </div>
+
+        <div class="modal-actions-row">
+          <button id="playAgainBtn" class="grand-btn"><span>PLAY AGAIN</span> ➔</button>
+          <button id="winLobbyBtn" class="pill-btn">RETURN TO LOBBY</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Banner -->
+    <div id="toast" class="toast-banner" role="alert" aria-live="polite"></div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
