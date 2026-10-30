@@ -6,13 +6,11 @@ shared/node_modules/
 .pnp
 .pnp.js
 
-# Build artifacts
-dist/
+# Build artifacts to ignore
 client/dist/
 shared/dist/
 server/dist/
 dist-functions/
-netlify-ready-game.zip
 
 # Logs & caches
 *.log
@@ -30,4 +28,3 @@ yarn-error.log*
 # OS files
 .DS_Store
 Thumbs.db
-

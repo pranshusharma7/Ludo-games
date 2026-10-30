@@ -11,7 +11,7 @@
     "test": "npx tsx --test shared/tests/*.test.ts tests/*.test.ts",
     "build:shared": "npm --prefix shared run build",
     "build:client": "npm --prefix client run build",
-    "build": "npm run build:shared && npm run build:client",
+    "build": "npm run build:shared && npm run build:client && cp dist/index.html index.html && cp -r dist/assets assets",
     "dev": "npm --prefix client run dev"
   },
   "dependencies": {
