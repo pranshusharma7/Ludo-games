@@ -77,7 +77,7 @@ export const YARD_POSITIONS: Record<PlayerColor, Array<{ x: number; y: number }>
   ],
   blue: [
     { x: 15.3, y: 75.3 }, { x: 24.7, y: 75.3 },
-    { x: 15.3, y: 84.7 }, { x: 84.7, y: 84.7 }
+    { x: 15.3, y: 84.7 }, { x: 24.7, y: 84.7 }
   ]
 };
 

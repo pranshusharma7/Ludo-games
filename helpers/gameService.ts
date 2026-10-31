@@ -39,10 +39,12 @@ export class GameService {
       while (!created && attempts < 5) {
         attempts++;
         newRoomCode = generateRoomCode();
+        const hostColor: PlayerColor = params.preferredColor || 'red';
+
         const initialPlayer: Player = {
           id: playerId,
           name: params.playerName || 'Player 1',
-          color: 'red',
+          color: hostColor,
           avatar: params.avatar || '👑',
           isBot: false,
           isConnected: true,
@@ -65,7 +67,7 @@ export class GameService {
           playerCount: count,
           players: [initialPlayer],
           turnState: {
-            activeColor: 'red',
+            activeColor: hostColor,
             roll: null,
             sixesStreak: 0,
             phase: 'waiting',
@@ -82,7 +84,7 @@ export class GameService {
           version: 1
         };
 
-        LudoEngine.addLog(initialGameState, `Room ${newRoomCode} created by ${initialPlayer.name}.`, 'system', 'red');
+        LudoEngine.addLog(initialGameState, `Room ${newRoomCode} created by ${initialPlayer.name}.`, 'system', hostColor);
 
         const writeRes = await blobsRoomStore.setRoom(newRoomCode, initialGameState, { onlyIfNew: true });
         if (writeRes.modified) {
@@ -91,7 +93,7 @@ export class GameService {
             success: true,
             roomCode: newRoomCode,
             gameState: initialGameState,
-            playerColor: 'red'
+            playerColor: hostColor
           };
         }
       }
@@ -170,27 +172,50 @@ export class GameService {
         return { success: false, error: 'Only the host can start the match.' };
       }
 
-      const activeColors = TURN_ORDER[gameState.playerCount] || TURN_ORDER[4];
-
       // Fill empty slots with bots
-      while (gameState.players.length < gameState.playerCount) {
-        const nextColor = activeColors[gameState.players.length];
-        const botIndex = gameState.players.length + 1;
-        gameState.players.push({
-          id: `bot_${nextColor}`,
-          name: `Bot ${nextColor.toUpperCase()}`,
-          color: nextColor,
-          avatar: '🤖',
-          isBot: true,
-          isConnected: true,
-          tokens: [-1, -1, -1, -1],
-          finishedCount: 0,
-          capturesCount: 0
-        });
+      if (gameState.playerCount === 2) {
+        const hostColor = gameState.players[0]?.color || 'red';
+        const opponentMap: Record<PlayerColor, PlayerColor> = {
+          red: 'yellow',
+          yellow: 'red',
+          blue: 'green',
+          green: 'blue'
+        };
+        const opponentColor = opponentMap[hostColor];
+        while (gameState.players.length < 2) {
+          gameState.players.push({
+            id: `bot_${opponentColor}`,
+            name: `Bot ${opponentColor.toUpperCase()}`,
+            color: opponentColor,
+            avatar: '🤖',
+            isBot: true,
+            isConnected: true,
+            tokens: [-1, -1, -1, -1],
+            finishedCount: 0,
+            capturesCount: 0
+          });
+        }
+      } else {
+        const allColors: PlayerColor[] = ['red', 'green', 'yellow', 'blue'];
+        while (gameState.players.length < gameState.playerCount) {
+          const used = gameState.players.map(p => p.color);
+          const nextColor = allColors.find(c => !used.includes(c)) || 'blue';
+          gameState.players.push({
+            id: `bot_${nextColor}`,
+            name: `Bot ${nextColor.toUpperCase()}`,
+            color: nextColor,
+            avatar: '🤖',
+            isBot: true,
+            isConnected: true,
+            tokens: [-1, -1, -1, -1],
+            finishedCount: 0,
+            capturesCount: 0
+          });
+        }
       }
 
       gameState.turnState.phase = 'roll';
-      gameState.turnState.activeColor = activeColors[0];
+      gameState.turnState.activeColor = gameState.players[0].color;
       gameState.turnState.roll = null;
       gameState.turnState.sixesStreak = 0;
       gameState.turnState.availableMoves = [];

@@ -129,20 +129,49 @@ export const useSocket = () => {
   }, [gameState?.roomCode, updateStateFromApi]);
 
   const joinRoom = useCallback(
-    async (roomCode: string | undefined, playerName: string, avatar: string, playerCount = 4) => {
+    async (roomCode: string | undefined, playerName: string, avatar: string, playerCount = 4, preferredColor: PlayerColor = 'blue') => {
       const res = await callApi({
         action: 'join_room',
         roomCode,
         playerName,
         avatar,
         playerCount,
-        playerId: myPlayerId
+        playerId: myPlayerId,
+        preferredColor
       });
 
       if (res.success && res.gameState) {
         updateStateFromApi(res.gameState);
       }
       return res;
+    },
+    [callApi, myPlayerId, updateStateFromApi]
+  );
+
+  const playVsComputer = useCallback(
+    async (playerName: string, avatar: string, playerCount = 4, preferredColor: PlayerColor = 'blue') => {
+      const joinRes = await callApi({
+        action: 'join_room',
+        playerName,
+        avatar,
+        playerCount,
+        playerId: myPlayerId,
+        preferredColor
+      });
+
+      if (joinRes.success && joinRes.gameState && joinRes.roomCode) {
+        updateStateFromApi(joinRes.gameState);
+        const startRes = await callApi({
+          action: 'start_game',
+          roomCode: joinRes.roomCode,
+          playerId: myPlayerId
+        });
+        if (startRes.success && startRes.gameState) {
+          updateStateFromApi(startRes.gameState);
+        }
+        return startRes;
+      }
+      return joinRes;
     },
     [callApi, myPlayerId, updateStateFromApi]
   );
@@ -249,6 +278,7 @@ export const useSocket = () => {
     reactions,
     lastDiceEvent,
     joinRoom,
+    playVsComputer,
     quickMatch,
     startGame,
     rollDice,

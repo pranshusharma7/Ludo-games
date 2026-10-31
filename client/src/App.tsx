@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { LudoEngine, PlayerColor } from '@royal-ludo/shared';
 import { useSocket } from './hooks/useSocket';
 import { useTheme } from './context/ThemeContext';
 import { useAudio } from './hooks/useAudio';
@@ -26,6 +27,7 @@ export const App: React.FC = () => {
     reactions,
     lastDiceEvent,
     joinRoom,
+    playVsComputer,
     quickMatch,
     startGame,
     rollDice,
@@ -84,6 +86,34 @@ export const App: React.FC = () => {
   const activeColor = gameState?.turnState.activeColor || 'red';
   const isMyTurn = myColor ? activeColor === myColor : true;
   const canRoll = gameState?.turnState.phase === 'roll';
+
+  // Automated Autonomous Bot Turns Runner
+  useEffect(() => {
+    if (!isPlaying || !gameState) return;
+
+    const currentActiveColor = gameState.turnState.activeColor;
+    const activePlayer = gameState.players.find(p => p.color === currentActiveColor);
+
+    if (activePlayer && activePlayer.isBot) {
+      if (gameState.turnState.phase === 'roll') {
+        const timer = setTimeout(() => {
+          rollDice();
+        }, 800);
+        return () => clearTimeout(timer);
+      }
+
+      if (gameState.turnState.phase === 'move' && gameState.turnState.roll !== null) {
+        const timer = setTimeout(() => {
+          const legal = gameState.turnState.availableMoves;
+          if (legal && legal.length > 0) {
+            const best = LudoEngine.chooseBestMove(gameState, currentActiveColor, gameState.turnState.roll!, legal);
+            moveToken(best);
+          }
+        }, 1250);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isPlaying, gameState, rollDice, moveToken]);
 
   return (
     <div
@@ -159,7 +189,8 @@ export const App: React.FC = () => {
             myPlayerId={myPlayerId}
             gameState={gameState}
             onQuickMatch={quickMatch}
-            onCreateRoom={(name, avatar, count) => joinRoom(undefined, name, avatar, count)}
+            onPlayVsComputer={playVsComputer}
+            onCreateRoom={(name, avatar, count, color) => joinRoom(undefined, name, avatar, count, color)}
             onJoinRoom={(code, name, avatar) => joinRoom(code, name, avatar)}
             onStartGame={startGame}
           />

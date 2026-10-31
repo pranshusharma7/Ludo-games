@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Zap, Plus, ArrowRight, Share2, Crown, Sparkles } from 'lucide-react';
-import { DEFAULT_AVATARS, GameState } from '@royal-ludo/shared';
+import { Users, Zap, Plus, ArrowRight, Share2, Crown, Sparkles, Bot } from 'lucide-react';
+import { DEFAULT_AVATARS, GameState, PlayerColor } from '@royal-ludo/shared';
 import { ShareRoomModal } from '../Modals/ShareRoomModal';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -9,7 +9,8 @@ interface LobbyScreenProps {
   myPlayerId: string;
   gameState: GameState | null;
   onQuickMatch: (name: string, avatar: string, count: number) => Promise<any>;
-  onCreateRoom: (name: string, avatar: string, count: number) => Promise<any>;
+  onPlayVsComputer: (name: string, avatar: string, count: number, color: PlayerColor) => Promise<any>;
+  onCreateRoom: (name: string, avatar: string, count: number, color?: PlayerColor) => Promise<any>;
   onJoinRoom: (code: string, name: string, avatar: string) => Promise<any>;
   onStartGame: () => Promise<any>;
 }
@@ -18,6 +19,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
   myPlayerId,
   gameState,
   onQuickMatch,
+  onPlayVsComputer,
   onCreateRoom,
   onJoinRoom,
   onStartGame
@@ -26,9 +28,10 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
 
   const [name, setName] = useState<string>(() => localStorage.getItem('ludo_name') || 'Royal Player');
   const [avatar, setAvatar] = useState<string>(() => localStorage.getItem('ludo_avatar') || '👑');
+  const [selectedColor, setSelectedColor] = useState<PlayerColor>('blue');
   const [playerCount, setPlayerCount] = useState<number>(4);
   const [joinCodeInput, setJoinCodeInput] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'quick' | 'create' | 'join'>('quick');
+  const [activeTab, setActiveTab] = useState<'solo' | 'create' | 'join'>('solo');
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -41,18 +44,18 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
     localStorage.setItem('ludo_avatar', newAvatar);
   };
 
-  const handleQuickMatch = async () => {
+  const handlePlaySolo = async () => {
     setErrorMsg(null);
     setIsLoading(true);
-    const res = await onQuickMatch(name, avatar, playerCount);
+    const res = await onPlayVsComputer(name, avatar, playerCount, selectedColor);
     setIsLoading(false);
-    if (!res.success) setErrorMsg(res.error || 'Failed to find match');
+    if (!res.success) setErrorMsg(res.error || 'Failed to start game');
   };
 
   const handleCreateRoom = async () => {
     setErrorMsg(null);
     setIsLoading(true);
-    const res = await onCreateRoom(name, avatar, playerCount);
+    const res = await onCreateRoom(name, avatar, playerCount, selectedColor);
     setIsLoading(false);
     if (!res.success) setErrorMsg(res.error || 'Failed to create room');
   };
@@ -198,15 +201,45 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
         </div>
       </div>
 
-      {/* Navigation Tabs (Quick Match | Create Room | Join Room) */}
+      {/* Color Selection Pill */}
+      <div className="w-full bg-[#1b1009]/95 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-amber-500/35 mb-4">
+        <label className="text-[10px] font-bold uppercase tracking-wider text-amber-200/70 block mb-2 text-center">
+          Choose Your Sovereign Color
+        </label>
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { id: 'blue' as PlayerColor, label: 'Blue', emoji: '🔵', bg: '#1d4ed8' },
+            { id: 'red' as PlayerColor, label: 'Red', emoji: '🔴', bg: '#b91c1c' },
+            { id: 'green' as PlayerColor, label: 'Green', emoji: '🟢', bg: '#15803d' },
+            { id: 'yellow' as PlayerColor, label: 'Yellow', emoji: '🟡', bg: '#b45309' }
+          ].map(c => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setSelectedColor(c.id)}
+              className={`py-2 px-1 rounded-xl text-xs font-black transition flex flex-col items-center gap-1 border ${
+                selectedColor === c.id
+                  ? 'border-amber-300 ring-2 ring-amber-400 scale-105 shadow-lg'
+                  : 'border-white/10 opacity-70 hover:opacity-100'
+              }`}
+              style={{ background: c.bg }}
+            >
+              <span className="text-sm">{c.emoji}</span>
+              <span className="text-[10px] text-white uppercase tracking-wider">{c.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Navigation Tabs (Solo vs Bot | Host Room | Join Room) */}
       <div className="w-full grid grid-cols-3 p-1 rounded-2xl bg-[#140c06] border border-amber-500/30 backdrop-blur mb-5 text-xs font-bold">
         <button
-          onClick={() => setActiveTab('quick')}
+          onClick={() => setActiveTab('solo')}
           className={`py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 ${
-            activeTab === 'quick' ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-amber-950 shadow-md font-black' : 'text-amber-200/60 hover:text-white'
+            activeTab === 'solo' ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-amber-950 shadow-md font-black' : 'text-amber-200/60 hover:text-white'
           }`}
         >
-          <Zap size={14} /> Quick
+          <Bot size={14} /> Solo (Bot)
         </button>
         <button
           onClick={() => setActiveTab('create')}
@@ -234,12 +267,12 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
           </div>
         )}
 
-        {/* 1. Quick Match Tab */}
-        {activeTab === 'quick' && (
+        {/* 1. Solo vs Computer Tab */}
+        {activeTab === 'solo' && (
           <div className="flex flex-col gap-4">
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-amber-200/70 block mb-2">
-                Number of Players
+                Match Configuration
               </label>
               <div className="grid grid-cols-2 gap-2.5">
                 <button
@@ -252,7 +285,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
                   }`}
                 >
                   <span className="text-xl block">4</span>
-                  <span className="text-xs">Full Match</span>
+                  <span className="text-xs font-bold">4 Players (You + 3 Bots)</span>
                 </button>
                 <button
                   type="button"
@@ -264,18 +297,18 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
                   }`}
                 >
                   <span className="text-xl block">2</span>
-                  <span className="text-xs">Duel (1v1)</span>
+                  <span className="text-xs font-bold">Duel (1v1 vs Bot)</span>
                 </button>
               </div>
             </div>
 
             <button
-              onClick={handleQuickMatch}
+              onClick={handlePlaySolo}
               disabled={isLoading}
               className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-amber-950 font-display font-black text-sm tracking-wider shadow-xl hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2 mt-2 border border-amber-300/70"
             >
-              <Zap size={18} />
-              <span>{isLoading ? 'FINDING MATCH…' : 'FIND QUICK MATCH'}</span>
+              <Sparkles size={18} />
+              <span>{isLoading ? 'STARTING MATCH…' : 'PLAY NOW (VS BOTS)'}</span>
             </button>
           </div>
         )}
@@ -312,7 +345,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
               className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-amber-950 font-display font-black text-sm tracking-wider shadow-xl hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2 mt-2 border border-amber-300/70"
             >
               <Plus size={18} />
-              <span>{isLoading ? 'CREATING ROOM…' : 'CREATE PRIVATE ROOM'}</span>
+              <span>{isLoading ? 'CREATING ROOM…' : 'CREATE ROOM FOR FRIENDS'}</span>
             </button>
           </div>
         )}
